@@ -12,6 +12,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     lateinit var textEdit : EditText
     lateinit var btn : Button
     lateinit var spinner : Spinner
+    lateinit var amt : String
     var tipAmount : Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 btn.isEnabled = textEdit.text.toString().trim().isNotEmpty()
                 btn.isClickable = textEdit.text.toString().trim().isNotEmpty()
 
-                if (textEdit.text.toString() == "$0.00") {
+                if (textEdit.text.toString() == "$") {
                     btn.isEnabled = false
                     btn.isClickable = false
                 }
@@ -52,18 +53,23 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 textEdit.removeTextChangedListener(this)
                 if (p0 != null) {
-                    val clean = p0.replace("[$,.]".toRegex(), "")
-                    var curr = NumberFormat.getCurrencyInstance().format(clean.toDouble() / 100)
-                    textEdit.setText(curr)
-                    textEdit.setSelection(curr.length)
+                    amt = p0.replace("[$]".toRegex(), "")
+                    var formatted : String = "$$amt"
+                    textEdit.setText(formatted)
+                    textEdit.setSelection(amt.length + 1)
+                    if (amt.contains('.') && amt.indexOf(".") < amt.length - 2) {
+                        formatted = formatted.substring(0, amt.indexOf(".") + 4)
+                        textEdit.setText(formatted)
+                        textEdit.setSelection(formatted.length)
+                    }
                 }
                 textEdit.addTextChangedListener(this)
             }
         })
 
         btn.setOnClickListener {
-            val input : Double = textEdit.text.toString().replace("[$,.]".toRegex(), "").toDouble()
-            val tip : String = NumberFormat.getCurrencyInstance().format(input * tipAmount / 100)
+            val input : Double = amt.replace("[$]".toRegex(), "").toDouble()
+            val tip : String = NumberFormat.getCurrencyInstance().format(input * tipAmount)
             Toast.makeText(this, tip, Toast.LENGTH_LONG).show()
         }
     }
